@@ -1,7 +1,410 @@
 <!DOCTYPE html>
-<html>
-<body>
-<h1>Hello World</h1>
-<p>I'm hosted with GitHub Pages.</p>
-</body>
+<html lang="en">
+
+    <head>
+
+
+
+        <meta charset="utf-8">
+        <title>State of the Trail POC</title>
+        <link rel="stylesheet" href="style.css">
+
+    </head>
+
+    <body>
+        <header>
+             <h3 align="center">PCT - State of the Trail</h3>
+        </header>
+
+        <section style="width:30%;">
+            <h3> Information Summary</h3>
+            <hr>
+            <article id="regionInfo" class="info">
+                
+                
+                <table style="width:100%" paddding>
+                    <caption>Region</caption>
+  <tr>
+    <td>Name:</td>
+    <td id="regname" align="right"></td>
+  </tr>
+  <tr>
+    <td>Beg. Mile</td>
+    <td id="regbegmile" align="right">0.0</td>
+  </tr>
+  <tr>
+    <td>End. Mile</td>
+    <td id="regendmile" align="right">0.0</td>
+  </tr>  
+  <tr>
+    <td>Length</td>
+    <td id=reglength align="right">0.0</td>
+  </tr> 
+  
+  <tr>
+    <td>Chapter Miles</td>
+    <td id="regchaptmile" align="right">0.0</td>
+  </tr> 
+    <tr>
+    <td>Adopted Miles</td>
+    <td id="regadoptmile" align="right">0.0</td>
+  </tr> 
+  
+</table>
+
+                
+            </article>
+            <hr>
+            <article id="chapterInfo" class="info">
+                
+                <table style="width:100%">
+                    <caption>Chapter</caption>
+  <tr>
+    <td>Name:</td>
+    <td id="chaptname" align="right"></td>
+  </tr>
+  <tr>
+    <td>Beg. Mile</td>
+    <td id="chaptbegmile" align="right">0.0</td>
+  </tr>
+  <tr>
+    <td>End. Mile</td>
+    <td id="chaptendmile" align="right">0.0</td>
+  </tr>  
+  <tr>
+    <td>Length</td>
+    <td id="chaptlength" align="right">0.0</td>
+  </tr> 
+  
+    <tr>
+    <td>Adopted Miles</td>
+    <td id="chaptadoptmile" align="right">0.0</td>
+  </tr> 
+  
+</table>
+                
+                </article>
+                <hr>
+            <article id="adopterInfo" class="info">
+                
+                <table style="width:100%">
+                    <caption>Adopter</caption>
+  <tr>
+    <td>Name:</td>
+    <td id="adoptname" align="right"></td>
+  </tr>
+  <tr>
+    <td>Beg. Mile</td>
+    <td id="adoptname" align="right">0.0</td>
+  </tr>
+  <tr>
+    <td>End. Mile</td>
+    <td id="adoptname" align="right">0.0</td>
+  </tr> 
+   <tr>
+    <td>Length</td>
+    <td id="adoptlength" align="right">0.0</td>
+  </tr> 
+   <tr>
+    <td>Adopted Miles</td>
+    <td id="adoptmile" align="right">0.0</td>
+  </tr> 
+  
+  
+</table>
+                
+            </article>
+            <hr>
+        </section>
+
+        <section style="width:60%;">
+            <div id="map"></div>
+        </section>
+
+        <aside>
+            <div>
+                <p>right now I don't think we need
+                </p>
+            </div>
+
+        </aside>
+
+
+
+
+
+        <script src="./ObjectFiles/regions.js" class="json"></script>
+        <script src="./ObjectFiles/chapters.js" class="json"></script>
+        <script src="./ObjectFiles/adopters.js" class="json">
+            // load the tables - this is not the best way to do this they should be external text files and use JSON.parse to load
+             // var regionsJSON = JSON.parse(regions);
+        </script>
+
+        <script>
+           
+
+
+            /*  Model for geoJSON data
+    var geoJsonData=( 
+    
+    {
+    "type": "FeatureCollection",
+    "features": [
+       
+     { "type": "Feature", "geometry": { "type": "Point", "coordinates": [ -120.339844, 39.345206  ] } },
+    
+     { "type": "Feature", "properties": {"LineID": "LI001", "RegionID": "NCal" }, "geometry": { "type": "LineString", "coordinates": [ [-120.333478,39.339383], [-120.33426,39.339658] ] } }
+    
+    ]   // Features
+  	}   // Feature Collection
+  	);  // var geoJsonData
+  	
+  	*/
+
+            var infowindow;
+            var marker;
+
+            var map;
+            var x;
+
+            var pointLatLng = {
+                lat: 39.8184850,
+                lng: -121.072274
+            };  // this is intialized to the center point for the map
+            
+             // generic table search to determine the table entry for a map linestring
+             // assumes linestrings and tables are in order by mile
+             // stops with first entry in the table with beg. mile < the linestring end mile
+             // returns matching table entry
+
+            function searchByMile(searchTable, begMile, endMile) {
+                var i;
+                for (i in searchTable) {
+
+                    // Table entry is found for exact match at the beginning and partial match at the end
+                    if (searchTable[i].begMile <= begMile && searchTable[i].endMile > begMile) {
+                        return (searchTable[i]);
+
+                    };
+                };
+            };
+            
+            //calculate the summary info
+            // calculate Adopter Length
+            for (x in adoptersJSON) {
+                adoptersJSON[x].lenMiles = (adoptersJSON[x].endMile - adoptersJSON[x].begMile);
+                };
+            
+            //calculate Chapter Length and Adopter Miles
+                
+                for (x in chaptersJSON) {
+                   chaptersJSON[x].lenMiles = (chaptersJSON[x].endMile - chaptersJSON[x].begMile);
+                   chaptersJSON[x].adoptedMiles = 0;
+                   for(y in adoptersJSON) {
+                      if ((adoptersJSON[y].adoptName != "none") && 
+                         (chaptersJSON[x].chaptRegion === adoptersJSON[y].adoptRegion &&
+                          chaptersJSON[x].chaptID === adoptersJSON[y].adoptChapter)) {
+                           chaptersJSON[x].adoptedMiles += adoptersJSON[y].lenMiles
+                    };
+                     
+                
+                  };
+               
+                };
+                    
+           
+            // calculate Region Length, Chapter Miles and Adopter Miles
+           
+            
+             for (x in regionsJSON) {
+                   regionsJSON[x].lenMiles = (regionsJSON[x].endMile - regionsJSON[x].begMile);
+                   regionsJSON[x].chapterMiles = 0;
+                   regionsJSON[x].adoptedMiles = 0;
+                   for(y in chaptersJSON) {
+                      if (regionsJSON[x].regID === chaptersJSON[y].chaptRegion) {
+                          regionsJSON[x].adoptedMiles += chaptersJSON[y].adoptedMiles;
+                          if (chaptersJSON[y].chaptName != "none") {
+                              regionsJSON[x].chapterMiles += chaptersJSON[y].lenMiles;
+                          };
+                      };
+               
+                   };
+             } ;
+
+            
+    
+
+            function initMap() {
+                map = new google.maps.Map(document.getElementById('map'), {
+                        center: pointLatLng,
+                        mapTypeId: google.maps.MapTypeId.TERRAIN,
+                        zoom: 7
+                    }); // end of map.Map
+
+                /*    
+            
+      map.data.addGeoJson(geoJsonData); //load internally
+  */
+
+                // Load geoJSON from external file 
+
+
+                map.data.loadGeoJson('./track_geojson/pct_ca_sect_i.json');
+                map.data.loadGeoJson('./track_geojson/pct_ca_sect_j.json');
+
+
+
+                map.data.loadGeoJson('./track_geojson/pct_ca_sect_k.json'); 
+
+                map.data.loadGeoJson('./track_geojson/pct_ca_sect_l.json'); 
+
+                map.data.loadGeoJson('./track_geojson/pct_ca_sect_m.json'); 
+
+                map.data.loadGeoJson('./track_geojson/pct_ca_sect_n.json'); 
+
+                map.data.loadGeoJson('./track_geojson/pct_ca_sect_o.json'); 
+
+
+
+
+
+
+                map.data.setStyle(function(feature) {
+
+                    var trackColor = "gray";
+                    var segmentendMile = feature.getProperty("endMile");
+                    var segmentbegMile = feature.getProperty("begMile");
+                    var segmentEndLatLng = feature.getGeometry().getAt(1);
+                    var segmentBegLatLng = feature.getGeometry().getAt(0);
+                    var segmentRegion = searchByMile(regionsJSON, segmentbegMile, segmentendMile);
+
+
+
+                    if (segmentRegion === undefined) {
+                        trackColor = "gray"
+                    } else {
+                        trackColor = "black";
+
+                        // Need to put a marker on the end point of the last region  || (segmentRegion.endMile == segmentendMile
+
+
+                        // No code for condition where region beg or end mile is outside of range of line strings
+                        // Find line segment for end of region
+                        // 
+                        if (segmentRegion.endMile > segmentbegMile && segmentRegion.endMile <= segmentendMile) {
+
+                            // probably need to build an array of markers that have been created
+                            // also at some point need to visible/invisible based on zoom level
+                            marker = new google.maps.Marker({
+                                    position: segmentEndLatLng,
+                                    map: map,
+                                    title: "End " + segmentRegion.regName,
+                                    label: "R"
+                                });
+
+                        };
+
+                        // We will only see the beginning line segment for the first region or if the region happens to exactly match the beginning of  a line segment
+                        //
+                        if (segmentRegion.begMile == segmentbegMile) {
+                            console.log(segmentRegion.regID + " Beg. " + segmentRegion.begMile + " at beg of " + segmentbegMile + " " + segmentendMile);
+                        } else if (segmentRegion.begMile > segmentbegMile && segmentRegion.begMile < segmentendMile) // this shouldn't occur
+                        {
+                            console.log(segmentRegion.regID + "Beg. " + segmentRegion.begMile + " at end of " + segmentbegMile + " " + segmentendMile);
+                        };
+
+                    }; // end of region marker processing
+
+
+
+
+                    return ({
+                            strokeColor: trackColor,
+                            strokeOpacity: 0.6,
+                            strokeWeight: 5
+                        });
+
+                }); // end of function'
+
+
+
+                infowindow = new google.maps.InfoWindow({
+                        maxWidth: 420
+                    });
+
+
+                map.data.addListener('click', function(event) {
+                    // going to have to check for feature type
+                    var content = "<div class='infowindow'>";
+                    segmentendMile = event.feature.getProperty("endMile");
+                    segmentbegMile = event.feature.getProperty("begMile");
+                    segmentLineID = event.feature.getProperty("LIneID");
+                    segmentRegion = searchByMile(regionsJSON, segmentbegMile, segmentendMile);
+                   
+                    if (segmentRegion === undefined) {
+
+                        content += "Region not assigned" + "<br/>";
+                        document.getElementById("regname").innerHTML = "Unassigned";  
+                         document.getElementById("regbegmile").innerHTML = "0.0"; 
+                         document.getElementById("regendmile").innerHTML = "0.0";
+                         document.getElementById("reglength").innerHTML = "0.0";
+                         document.getElementById("regchaptmile").innerHTML = "0.0";
+                         document.getElementById("regadoptmile").innerHTML = "0.0";
+                    } else {
+                        content += "Region Name: " + segmentRegion.regName + "<br/>";
+                        content += "PCT Mile " + segmentbegMile + "<br/>";
+                        content += "PCT California Section " + segmentLineID.substring(1,2) + "<br/>";
+                        content += "Latitude: " + event.latLng.lat() + "<br/>";
+                        content += "Longitude: " + event.latLng.lng();
+                        
+                         document.getElementById("regname").innerHTML = segmentRegion.regName;  
+                         document.getElementById("regbegmile").innerHTML = segmentRegion.begMile.toFixed(1); 
+                         document.getElementById("regendmile").innerHTML = segmentRegion.endMile.toFixed(1);
+                         document.getElementById("reglength").innerHTML = segmentRegion.lenMiles.toFixed(1);
+                         document.getElementById("regchaptmile").innerHTML = segmentRegion.chapterMiles.toFixed(1);
+                         document.getElementById("regadoptmile").innerHTML = segmentRegion.adoptedMiles.toFixed(1);
+                         segmentChapter=searchByMile(chaptersJSON, segmentbegMile, segmentendMile);
+                         document.getElementById("chaptname").innerHTML = segmentChapter.chaptName;  
+                         document.getElementById("chaptbegmile").innerHTML = segmentChapter.begMile.toFixed(1); 
+                         document.getElementById("chaptendmile").innerHTML = segmentChapter.endMile.toFixed(1);
+                         document.getElementById("chaptlength").innerHTML = segmentChapter.lenMiles.toFixed(1);
+                         document.getElementById("chaptadoptmile").innerHTML = segmentChapter.adoptedMiles.toFixed(1);
+                         
+                          };
+                         
+                    ;
+
+
+                    content += "</div>";
+
+
+                    infowindow.setContent(content);
+                    infowindow.setPosition(event.latLng);
+                    infowindow.open(map);
+
+                });
+
+
+
+
+
+
+            }; //End Init Map
+
+            /*            
+            //get by key
+var regionKey = "Reg05";
+var  regionData = regionsJSON[regionKey];
+
+alert(regionData.regendMile);
+          
+*/
+        </script>
+
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB7j8Ph50RpyW4iGYZbyLCJfULB10Tfgrg&callback=initMap" async defer></script>
+
+
+
+    </body>
+
 </html>
