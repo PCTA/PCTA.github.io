@@ -402,6 +402,14 @@
                                     title: "End " + segmentRegion.regName,
                                     label: "R"
                                 });
+                         // code for beginning of region when only region 3
+                         else if (segmentRegion.begMile >= segmentbegMile && segmentRegion.begMile < segmentendMile) {
+                            marker = new google.maps.Marker({
+                                    position: segmentbegLatLng,
+                                    map: map,
+                                    title: "Beg " + segmentRegion.regName,
+                                    label: "R"
+                                });
                         }
                         
                         /* this logic is not used
@@ -426,12 +434,6 @@
                         trackWeight = 2;
                     };
                     
-                    
-                    
-
-
-
-
 
                     return ({
                             strokeColor: trackColor,
