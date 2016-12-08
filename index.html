@@ -407,7 +407,7 @@
                          // code for beginning of region when only region 3
                          else if (segmentRegion.begMile >= segmentbegMile && segmentRegion.begMile < segmentendMile) {
                             marker = new google.maps.Marker({
-                                    position: segmentbegLatLng,
+                                    position: segmentBegLatLng,
                                     map: map,
                                     title: "Beg " + segmentRegion.regName,
                                     label: "R"
@@ -434,7 +434,7 @@
                     
                     else {    // no region
                         trackColor = "gray";
-                        trackWeight = 2;
+                        trackWeight = 4;
                     };
                     
 
