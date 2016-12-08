@@ -4,31 +4,36 @@
     <head>
 
 
+<meta name="viewport" content="initial-scale=1.0">
 
         <meta charset="utf-8">
-        <title>State of the Trail POC</title>
+        <title>PCTA State of the Trail POC</title>
         <link rel="stylesheet" href="style.css">
 
     </head>
 
     <body>
         <header>
-             <h3 align="center">PCT - State of the Trail</h3>
+             <h3 align="center">PCTA - State of the Trail - Sandbox  </h3>
         </header>
 
-        <section style="width:30%;">
+        <section style="width:18%;">
             <h3> Information Summary</h3>
             <hr>
             <article id="regionInfo" class="info">
                 
                 
-                <table style="width:100%" paddding>
+                <table class="regioninfo" style="width:100%" paddding>
                     <caption>Region</caption>
   <tr>
     <td>Name:</td>
     <td id="regname" align="right"></td>
   </tr>
   <tr>
+    <td>Length</td>
+    <td id=reglength align="right">0.0</td>
+  </tr> 
+    <tr>
     <td>Beg. Mile</td>
     <td id="regbegmile" align="right">0.0</td>
   </tr>
@@ -36,18 +41,25 @@
     <td>End. Mile</td>
     <td id="regendmile" align="right">0.0</td>
   </tr>  
-  <tr>
-    <td>Length</td>
-    <td id=reglength align="right">0.0</td>
-  </tr> 
-  
+
   <tr>
     <td>Chapter Miles</td>
-    <td id="regchaptmile" align="right">0.0</td>
+    <td id="regchaptmiles" align="right">0.0</td>
   </tr> 
+  <tr> <td>Adopted Miles:</td>
+      <td id="regadoptmiles" align="right">0.0</td>
+  </tr>
     <tr>
-    <td>Adopted Miles</td>
-    <td id="regadoptmile" align="right">0.0</td>
+    <td>  &nbsp; Maintenance</td>
+    <td id="regmaintmiles" align="right">0.0</td>
+  </tr> 
+   <tr>
+    <td>&nbsp; Logout</td>
+    <td id="reglogoutmiles" align="right">0.0</td>
+  </tr> 
+   <tr>
+    <td>&nbsp; Scouting</td>
+    <td id="regscoutmiles" align="right">0.0</td>
   </tr> 
   
 </table>
@@ -61,8 +73,15 @@
                     <caption>Chapter</caption>
   <tr>
     <td>Name:</td>
+  
+    
     <td id="chaptname" align="right"></td>
   </tr>
+   <tr>
+    <td>Length</td>
+    <td id="chaptlength" align="right">0.0</td>
+  </tr> 
+
   <tr>
     <td>Beg. Mile</td>
     <td id="chaptbegmile" align="right">0.0</td>
@@ -70,16 +89,24 @@
   <tr>
     <td>End. Mile</td>
     <td id="chaptendmile" align="right">0.0</td>
-  </tr>  
+  </tr>
   <tr>
-    <td>Length</td>
-    <td id="chaptlength" align="right">0.0</td>
+    <td>Adopted Miles:</td>
+    <td id="chaptadoptmiles" align="right">0.0</td>
   </tr> 
-  
-    <tr>
-    <td>Adopted Miles</td>
-    <td id="chaptadoptmile" align="right">0.0</td>
+      <tr>
+    <td>  &nbsp; Maintenance</td>
+    <td id="chaptmaintmiles" align="right">0.0</td>
   </tr> 
+   <tr>
+    <td>&nbsp; Logout</td>
+    <td id="chaptlogoutmiles" align="right">0.0</td>
+  </tr> 
+   <tr>
+    <td>&nbsp; Scouting</td>
+    <td id="chaptscoutmiles" align="right">0.0</td>
+  </tr> 
+
   
 </table>
                 
@@ -93,23 +120,25 @@
     <td>Name:</td>
     <td id="adoptname" align="right"></td>
   </tr>
-  <tr>
-    <td>Beg. Mile</td>
-    <td id="adoptname" align="right">0.0</td>
+     <tr>
+    <td>Type:</td>
+    <td id="adopttype" align="right"></td>
   </tr>
-  <tr>
-    <td>End. Mile</td>
-    <td id="adoptname" align="right">0.0</td>
-  </tr> 
+
+   
    <tr>
     <td>Length</td>
     <td id="adoptlength" align="right">0.0</td>
   </tr> 
-   <tr>
-    <td>Adopted Miles</td>
-    <td id="adoptmile" align="right">0.0</td>
+  <tr>
+    <td>Beg. Mile</td>
+    <td id="adoptbegmile" align="right">0.0</td>
+  </tr>
+  <tr>
+    <td>End. Mile</td>
+    <td id="adoptendmile" align="right">0.0</td>
   </tr> 
-  
+   
   
 </table>
                 
@@ -117,13 +146,14 @@
             <hr>
         </section>
 
-        <section style="width:60%;">
+        <section style="width:70%;">
             <div id="map"></div>
         </section>
 
         <aside>
             <div>
-                <p>right now I don't think we need
+                <p>Region 03 <br>
+                Stewardship View
                 </p>
             </div>
 
@@ -163,9 +193,13 @@
 
             var infowindow;
             var marker;
-
             var map;
+            var segmentRegion;
+            var segmentChapter;
+            var segmentAdopter;
+            var i;
             var x;
+            var y;
 
             var pointLatLng = {
                 lat: 39.8184850,
@@ -199,15 +233,26 @@
                 
                 for (x in chaptersJSON) {
                    chaptersJSON[x].lenMiles = (chaptersJSON[x].endMile - chaptersJSON[x].begMile);
-                   chaptersJSON[x].adoptedMiles = 0;
+                   chaptersJSON[x].maintMiles = 0;
+                   chaptersJSON[x].logoutMiles = 0;
+                   chaptersJSON[x].scoutMiles = 0;
+                   // condider putting some kind of filter in here based on chapter id
                    for(y in adoptersJSON) {
                       if ((adoptersJSON[y].adoptName != "none") && 
                          (chaptersJSON[x].chaptRegion === adoptersJSON[y].adoptRegion &&
                           chaptersJSON[x].chaptID === adoptersJSON[y].adoptChapter)) {
-                           chaptersJSON[x].adoptedMiles += adoptersJSON[y].lenMiles
+                             if (adoptersJSON[y].adoptType === "Maintenance") {
+                               chaptersJSON[x].maintMiles += adoptersJSON[y].lenMiles; }
+                             else if (adoptersJSON[y].adoptType === "Scout") {
+                               chaptersJSON[x].scoutMiles += adoptersJSON[y].lenMiles; }
+
+                             else if (adoptersJSON[y].adoptType === "Logout") {
+                              chaptersJSON[x].logoutMiles += adoptersJSON[y].lenMiles; }
+                          
+                        
                     };
                      
-                
+        
                   };
                
                 };
@@ -219,10 +264,16 @@
              for (x in regionsJSON) {
                    regionsJSON[x].lenMiles = (regionsJSON[x].endMile - regionsJSON[x].begMile);
                    regionsJSON[x].chapterMiles = 0;
-                   regionsJSON[x].adoptedMiles = 0;
+                   regionsJSON[x].maintMiles = 0;
+                   regionsJSON[x].scoutMiles = 0;                  
+                   regionsJSON[x].logoutMiles = 0;
                    for(y in chaptersJSON) {
                       if (regionsJSON[x].regID === chaptersJSON[y].chaptRegion) {
-                          regionsJSON[x].adoptedMiles += chaptersJSON[y].adoptedMiles;
+                          regionsJSON[x].maintMiles += chaptersJSON[y].maintMiles;
+                          regionsJSON[x].scoutMiles += chaptersJSON[y].scoutMiles;
+                          regionsJSON[x].logoutMiles += chaptersJSON[y].logoutMiles;
+
+                          
                           if (chaptersJSON[y].chaptName != "none") {
                               regionsJSON[x].chapterMiles += chaptersJSON[y].lenMiles;
                           };
@@ -230,15 +281,29 @@
                
                    };
              } ;
-
-            
-    
+             
+// Initalize the Region Info - Reg03 is fixed now
+   segmentRegion = regionsJSON.Reg03;
+  
+  
+     document.getElementById("regname").innerHTML = segmentRegion.regName;  
+     document.getElementById("regbegmile").innerHTML = segmentRegion.begMile.toFixed(1); 
+     document.getElementById("regendmile").innerHTML = segmentRegion.endMile.toFixed(1);
+     document.getElementById("reglength").innerHTML = segmentRegion.lenMiles.toFixed(1);
+     document.getElementById("regchaptmiles").innerHTML = segmentRegion.chapterMiles.toFixed(1);
+     document.getElementById("regmaintmiles").innerHTML = segmentRegion.maintMiles.toFixed(1);
+     document.getElementById("regscoutmiles").innerHTML = segmentRegion.scoutMiles.toFixed(1);
+     document.getElementById("reglogoutmiles").innerHTML = segmentRegion.logoutMiles.toFixed(1);
+     adopterMiles = (segmentRegion.maintMiles + segmentRegion.scoutMiles + segmentRegion.logoutMiles);
+     document.getElementById("regadoptmiles").innerHTML = adopterMiles.toFixed(1);
+   
+  // Initialize the map  
 
             function initMap() {
                 map = new google.maps.Map(document.getElementById('map'), {
                         center: pointLatLng,
                         mapTypeId: google.maps.MapTypeId.TERRAIN,
-                        zoom: 7
+                        zoom: 9
                     }); // end of map.Map
 
                 /*    
@@ -254,13 +319,13 @@
 
 
 
-                map.data.loadGeoJson('./track_geojson/pct_ca_sect_k.json'); 
+               map.data.loadGeoJson('./track_geojson/pct_ca_sect_k.json'); 
 
                 map.data.loadGeoJson('./track_geojson/pct_ca_sect_l.json'); 
 
-                map.data.loadGeoJson('./track_geojson/pct_ca_sect_m.json'); 
+               map.data.loadGeoJson('./track_geojson/pct_ca_sect_m.json'); 
 
-                map.data.loadGeoJson('./track_geojson/pct_ca_sect_n.json'); 
+               map.data.loadGeoJson('./track_geojson/pct_ca_sect_n.json'); 
 
                 map.data.loadGeoJson('./track_geojson/pct_ca_sect_o.json'); 
 
@@ -270,21 +335,57 @@
 
 
                 map.data.setStyle(function(feature) {
-
+                    var trackView = "Adopter"; // other option Scouting Status
+                    
                     var trackColor = "gray";
+                    var chapterWeight = 4;
+                    var trackWeight = 2;
+                    var noAdopterColor = "black";
+                    var noChapterColor = "gray";
+                    var scoutColor = "blue";
+                    var logoutColor = "brown";
+                    var maintColor = "green";
+                    
+                    
                     var segmentendMile = feature.getProperty("endMile");
                     var segmentbegMile = feature.getProperty("begMile");
                     var segmentEndLatLng = feature.getGeometry().getAt(1);
                     var segmentBegLatLng = feature.getGeometry().getAt(0);
-                    var segmentRegion = searchByMile(regionsJSON, segmentbegMile, segmentendMile);
+                    segmentRegion = searchByMile(regionsJSON, segmentbegMile, segmentendMile);
 
 
+                    if (segmentRegion.regID === "Reg03") {
+                        trackColor = noChapterColor;
+                        // set the track color and weight
+                        segmentChapter = searchByMile(chaptersJSON, segmentbegMile, segmentendMile);
+                        segmentAdopter = searchByMile(adoptersJSON, segmentbegMile, segmentendMile);
+                        
+                        
+                        var isChapter = (segmentChapter.chaptName != "none");
+                        var isScout = (segmentAdopter.adoptType === "Scout");
+                        var isLogout = (segmentAdopter.adoptType === "Logout");
+                        var isMaint = (segmentAdopter.adoptType === "Maintenance");
+                        
+                        /*
+                        if (segmentChapter.chaptName  === "none") {trackWeight=1}
+                        else {trackWeight=10};
+                        
+                        if (segmentAdopter.adoptType === "Scout") {trackColor = scoutColor}
+                        else if (segmentAdopter.adoptType === "Logout") {trackColor = logoutColor}
+                        else if (segmentAdopter.adoptType === "Maintenance") {trackColor = maintColor};
+                        
+                        */
+                         if (isChapter) {trackWeight = chapterWeight;
+                             trackColor = noAdopterColor;
+                         }
 
-                    if (segmentRegion === undefined) {
-                        trackColor = "gray"
-                    } else {
-                        trackColor = "black";
+                                                 
+                        if (isScout) {trackColor = scoutColor}
+                        else if (isLogout) {trackColor = logoutColor}
+                        else if (isMaint) {trackColor = maintColor};
 
+                  
+                        // set region markers
                         // Need to put a marker on the end point of the last region  || (segmentRegion.endMile == segmentendMile
 
 
@@ -301,19 +402,33 @@
                                     title: "End " + segmentRegion.regName,
                                     label: "R"
                                 });
-
-                        };
-
+                        }
+                        
+                        /* this logic is not used
+                                
                         // We will only see the beginning line segment for the first region or if the region happens to exactly match the beginning of  a line segment
                         //
-                        if (segmentRegion.begMile == segmentbegMile) {
-                            console.log(segmentRegion.regID + " Beg. " + segmentRegion.begMile + " at beg of " + segmentbegMile + " " + segmentendMile);
+                        if (segmentRegion.begMile === segmentbegMile) {
+ //                           console.log(segmentRegion.regID + " Beg. " + segmentRegion.begMile + " at beg of " + segmentbegMile + " " + segmentendMile);
                         } else if (segmentRegion.begMile > segmentbegMile && segmentRegion.begMile < segmentendMile) // this shouldn't occur
                         {
                             console.log(segmentRegion.regID + "Beg. " + segmentRegion.begMile + " at end of " + segmentbegMile + " " + segmentendMile);
                         };
 
-                    }; // end of region marker processing
+                    } // end of region marker processing
+                    
+                    */
+                    
+                    }
+                    
+                    else {    // no region
+                        trackColor = "gray";
+                        trackWeight = 2;
+                    };
+                    
+                    
+                    
+
 
 
 
@@ -321,13 +436,12 @@
                     return ({
                             strokeColor: trackColor,
                             strokeOpacity: 0.6,
-                            strokeWeight: 5
+                            strokeWeight: trackWeight
                         });
 
                 }); // end of function'
-
-
-
+                
+                
                 infowindow = new google.maps.InfoWindow({
                         maxWidth: 420
                     });
@@ -335,6 +449,7 @@
 
                 map.data.addListener('click', function(event) {
                     // going to have to check for feature type
+                    var adopterMiles = 0;
                     var content = "<div class='infowindow'>";
                     segmentendMile = event.feature.getProperty("endMile");
                     segmentbegMile = event.feature.getProperty("begMile");
@@ -344,12 +459,34 @@
                     if (segmentRegion === undefined) {
 
                         content += "Region not assigned" + "<br/>";
+                        
+                        // reset all the html elements
                         document.getElementById("regname").innerHTML = "Unassigned";  
-                         document.getElementById("regbegmile").innerHTML = "0.0"; 
-                         document.getElementById("regendmile").innerHTML = "0.0";
-                         document.getElementById("reglength").innerHTML = "0.0";
-                         document.getElementById("regchaptmile").innerHTML = "0.0";
-                         document.getElementById("regadoptmile").innerHTML = "0.0";
+                        document.getElementById("regbegmile").innerHTML = "0.0"; 
+                        document.getElementById("regendmile").innerHTML = "0.0";
+                        document.getElementById("reglength").innerHTML = "0.0";
+                        document.getElementById("regchaptmiles").innerHTML = "0.0";
+                        document.getElementById("regadoptmiles").innerHTML = "0.0";
+                        document.getElementById("regmaintmiles").innerHTML = 0.0;
+                        document.getElementById("regscoutmiles").innerHTML = 0.0;
+                        document.getElementById("reglogoutmiles").innerHTML = 0.0;
+                        document.getElementById("regadoptmiles").innerHTML = 0.0;
+                         
+                        document.getElementById("chaptname").innerHTML = "none";  
+                        document.getElementById("chaptbegmile").innerHTML = 0.0; 
+                        document.getElementById("chaptendmile").innerHTML = 0.0;
+                        document.getElementById("chaptlength").innerHTML = 0.0;
+                        document.getElementById("chaptscoutmiles").innerHTML = 0.0;
+                        document.getElementById("chaptmaintmiles").innerHTML = 0.0;
+                        document.getElementById("chaptlogoutmiles").innerHTML = 0.0;
+                        document.getElementById("chaptadoptmiles").innerHTML = 0.0;
+
+                         
+                        document.getElementById("adopttype").innerHTML = " " ; 
+                        document.getElementById("adoptbegmile").innerHTML = 0.0; 
+                        document.getElementById("adoptendmile").innerHTML = 0.0;
+                        document.getElementById("adoptlength").innerHTML = 0.0;
+
                     } else {
                         content += "Region Name: " + segmentRegion.regName + "<br/>";
                         content += "PCT Mile " + segmentbegMile + "<br/>";
@@ -361,18 +498,41 @@
                          document.getElementById("regbegmile").innerHTML = segmentRegion.begMile.toFixed(1); 
                          document.getElementById("regendmile").innerHTML = segmentRegion.endMile.toFixed(1);
                          document.getElementById("reglength").innerHTML = segmentRegion.lenMiles.toFixed(1);
-                         document.getElementById("regchaptmile").innerHTML = segmentRegion.chapterMiles.toFixed(1);
-                         document.getElementById("regadoptmile").innerHTML = segmentRegion.adoptedMiles.toFixed(1);
+                         document.getElementById("regchaptmiles").innerHTML = segmentRegion.chapterMiles.toFixed(1);
+                         document.getElementById("regmaintmiles").innerHTML = segmentRegion.maintMiles.toFixed(1);
+                         document.getElementById("regscoutmiles").innerHTML = segmentRegion.scoutMiles.toFixed(1);
+                         document.getElementById("reglogoutmiles").innerHTML = segmentRegion.logoutMiles.toFixed(1);
+                         adopterMiles = (segmentRegion.maintMiles + segmentRegion.scoutMiles + segmentRegion.logoutMiles);
+                         document.getElementById("regadoptmiles").innerHTML = adopterMiles.toFixed(1);
+
+                         
                          segmentChapter=searchByMile(chaptersJSON, segmentbegMile, segmentendMile);
                          document.getElementById("chaptname").innerHTML = segmentChapter.chaptName;  
                          document.getElementById("chaptbegmile").innerHTML = segmentChapter.begMile.toFixed(1); 
                          document.getElementById("chaptendmile").innerHTML = segmentChapter.endMile.toFixed(1);
                          document.getElementById("chaptlength").innerHTML = segmentChapter.lenMiles.toFixed(1);
-                         document.getElementById("chaptadoptmile").innerHTML = segmentChapter.adoptedMiles.toFixed(1);
-                         
+                         document.getElementById("chaptscoutmiles").innerHTML = segmentChapter.scoutMiles.toFixed(1);
+                         document.getElementById("chaptmaintmiles").innerHTML = segmentChapter.maintMiles.toFixed(1);
+                         document.getElementById("chaptlogoutmiles").innerHTML = segmentChapter.logoutMiles.toFixed(1);
+                         adopterMiles = (segmentChapter.maintMiles + segmentChapter.scoutMiles + segmentChapter.logoutMiles);
+                         document.getElementById("chaptadoptmiles").innerHTML = adopterMiles.toFixed(1);
+
+                         segmentAdopter=searchByMile(adoptersJSON, segmentbegMile, segmentendMile);
+                         document.getElementById("adoptname").innerHTML = segmentAdopter.adoptName;
+                         if (!segmentAdopter.adoptType) {
+                          document.getElementById("adopttype").innerHTML = " " ; }
+                         else {
+                              document.getElementById("adopttype").innerHTML = segmentAdopter.adoptType;};
+
+                         document.getElementById("adoptbegmile").innerHTML = segmentAdopter.begMile.toFixed(1); 
+                         document.getElementById("adoptendmile").innerHTML = segmentAdopter.endMile.toFixed(1);
+                         document.getElementById("adoptlength").innerHTML = segmentAdopter.lenMiles.toFixed(1);
+                        
+
                           };
                          
-                    ;
+                
+                    
 
 
                     content += "</div>";
@@ -382,7 +542,7 @@
                     infowindow.setPosition(event.latLng);
                     infowindow.open(map);
 
-                });
+                });  // end of listener
 
 
 
