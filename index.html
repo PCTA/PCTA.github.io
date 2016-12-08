@@ -217,7 +217,7 @@
 
                     // Table entry is found for exact match at the beginning and partial match at the end
                     // segment table needs a dummy entry beyond the end
-                    if (searchTable[i].begMile >= begMile && searchTable[i].endMile < endMile) {
+                    if (searchTable[i].begMile >= begMile && searchTable[i].endMile <= endMile) {
                         return (searchTable[i]);
 
                     };
