@@ -216,8 +216,9 @@
                 for (i in searchTable) {
 
                     // Table entry is found for exact match at the beginning and partial match at the end
-                    // segment table needs a dummy entry beyond the end
-                    if (searchTable[i].begMile >= begMile && searchTable[i].endMile <= endMile) {
+                    // THIS NEEDS WORK
+                    
+                    if (searchTable[i].begMile <= begMile && searchTable[i].endMile > endMile) {
                         return (searchTable[i]);
 
                     };
@@ -393,8 +394,8 @@
                         // No code for condition where region beg or end mile is outside of range of line strings
                         // Find line segment for end of region
                         // 
-                        if (segmentRegion.endMile >= segmentbegMile && segmentRegion.endMile <= segmentendMile) {
-
+                        if (segmentRegion.endMile > segmentbegMile && segmentRegion.endMile <= segmentendMile) {
+                        
                             // probably need to build an array of markers that have been created
                             // also at some point need to visible/invisible based on zoom level
                             marker = new google.maps.Marker({
